@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+
 
 app = FastAPI()
 origins = [
@@ -16,7 +18,8 @@ app.add_middleware(
 
 @app.get("/events")
 def get_events():
-    return
+    response = db.query("SELECT * FROM ScheduledEvents")
+    return jsonable_encoder(response)
 
 
 @app.post("/events")
