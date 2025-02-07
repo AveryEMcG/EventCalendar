@@ -1,5 +1,5 @@
 import sqlite3
-DATABASE_NAME = "ScheduledEvents.db"
+DATABASE_NAME = "ScheduledEvent.db"
 
 
 class Event:
@@ -19,11 +19,12 @@ class Event:
 def query(queryString):
     con = sqlite3.connect(DATABASE_NAME)
     cursor = con.cursor()
-    response = cursor.execute(queryString)
+    response = cursor.execute("SELECT * FROM ScheduledEvents")
     result = response.fetchall()
     out = []
+    print(result)
     for r in result:
-        out.append(Event(r[0], r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9]))
+        out.append(Event(r[0], r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],r[10]))
     con.close()
     return out    
 

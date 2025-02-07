@@ -9,6 +9,8 @@ Back end: FAST API
 Data: Sqlite
 
 
+
+
 Implement a server-side application and simple userinterface for creating and viewing scheduled
 events, using Python as the server-side technology. You may use the technology of your choice forthe
 UI.
@@ -25,4 +27,4 @@ occur at the same time every Monday and Wednesday.
 * There is no requirement for you to containerize your submission. However, you may optionally
 Dockerize your submission; please do not use any other containerization technology.
 * Clearly state all of the assumptions you made in completing the application
-* Submit your exercise response by providing the URL to a public Github repository
+* Submit your exercise response by providing the URL to a public Github repositorycd
