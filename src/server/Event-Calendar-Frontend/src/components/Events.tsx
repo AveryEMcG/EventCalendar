@@ -11,7 +11,7 @@ import addHours from 'date-fns/addHours'
 export interface ScheduledEvent {
   name: string;
   id: number;
-  start_time: Date;
+  start_time: number;
   duration: number;
   repeats_m: boolean;
   repeats_t: boolean;
@@ -55,16 +55,16 @@ export function ConvertServerEvents(events:any, dateRange:Date[]): Event[]{
   console.log(dateRange)
   var eventList = []
   for (let i = 0; i<events.length; i++){
-    console.log(new Date(events[i].start_time), " is the start time of event ", events[i].id)
      if(events[i].start_time<addHours(dateRange[6],24)){
      
-      let eventTime = events[i].start_time
-      let eventDate = new Date(eventTime)
+      let eventTimeSeconds = events[i].start_time*1000
+      let eventDate = new Date(eventTimeSeconds)
+      let eventEnd = addMilliseconds(eventDate,(events[i].duration*1000*60))
+      console.log(eventDate, " is the start time of event ", events[i].id," and this is the end-> ",eventEnd)
 
       eventList.push( {name: events[i].name,
            start: eventDate,
-           end:  addMilliseconds(eventDate,(events[i].duration*1000*60))})
-      
+           end:  eventEnd})
       for (let d = 0; d<dateRange.length; d++){
 
         if (isRepeating(events[i], dateRange[d])){

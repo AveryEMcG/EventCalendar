@@ -56,7 +56,7 @@ const locales = {
   // when we click through the weeks in the calendar, update our internal state
   const onRangeChange = data => {setDateRange(data)}
   const calenderEvents = ConvertServerEvents(events, dateRange)
-
+   console.log(events)
   return (
     <Calendar
       defaultView='week'
