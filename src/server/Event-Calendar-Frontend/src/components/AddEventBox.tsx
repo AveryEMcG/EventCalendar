@@ -1,6 +1,16 @@
 import { ScheduledEvent } from "./Events";
 import { useState } from "react";
+import toast, { Toaster } from 'react-hot-toast';
 import "react-datepicker/dist/react-datepicker.css";
+
+
+function isClientError(statusCode : number) {
+    return statusCode >= 400 && statusCode < 500;
+  }
+function isServerError(statusCode : number) {
+    return statusCode >= 500 && statusCode < 600;
+  }
+ 
 
 export function AddEventBox(props:any){
     const [startDate, setStartDate] = useState(new Date());
@@ -14,6 +24,7 @@ export function AddEventBox(props:any){
     const [duration,setDuration]=useState(0)
 
     console.log(props)
+    
     const handleSubmit = (event) => {
         event.preventDefault(); // Prevent default form submission
         console.log(startDate)
@@ -40,7 +51,23 @@ export function AddEventBox(props:any){
             },
             body: JSON.stringify({body
             })
-          })
+          }).then((resp)=>{
+            if (isClientError(resp.status)){
+                toast.error("Error in adding event, please check event times")
+                return
+            }
+            if (isServerError(resp.status)){
+                toast.error("Server error in adding event")
+                return
+            }
+            if ((resp.status)==200){
+                toast.success("Successfully added event, refresh page to see changes!")
+                return
+            }
+            toast("Got back response code: " + resp.status)
+            
+        })
+          
        
         // Your custom form handling logic here
       };
@@ -59,6 +86,7 @@ export function AddEventBox(props:any){
     Repeats Saturday: <input type="Checkbox"onChange={(event)=>setRepeatsSaturday(event.target.checked)}/><br/>
 
     <input type="submit"value="Create New Event"/></form>
+    <Toaster/>
     </>
   )
 
