@@ -1,5 +1,5 @@
 import getDay from 'date-fns/getDay'
-import addMilliseconds from 'date-fns/addMilliseconds'
+import {addSeconds} from 'date-fns/addSeconds'
 import {  intervalToDuration } from 'date-fns'
 import startOfDay from 'date-fns/startOfDay'
 import {add} from 'date-fns/add'
@@ -22,13 +22,14 @@ export interface ScheduledEvent {
   repeats_su: boolean;  
 }
 
-// This is the react-big-calendar event
+// This is the react-big-calendar formatted event
 export interface Event {
   name: string;
   start: Date;
   end: Date;
 }
 
+// self-explanatory - is this event going to be repeating?
 export function isRepeating(event: any, day:Date):boolean{
   let dayOfWeek = getDay(day)
    
@@ -51,16 +52,18 @@ export function isRepeating(event: any, day:Date):boolean{
    return false
 }
 
+// convert ScheduledEvent -> big calendar tolerant event
 export function ConvertServerEvents(events:any, dateRange:Date[]): Event[]{
-  console.log(dateRange)
+ 
   var eventList = []
+
   for (let i = 0; i<events.length; i++){
+
      if(events[i].start_time<addHours(dateRange[6],24)){
-     
-      let eventTimeSeconds = events[i].start_time*1000
-      let eventDate = new Date(eventTimeSeconds)
-      let eventEnd = addMilliseconds(eventDate,(events[i].duration*1000*60))
-      console.log(eventDate, " is the start time of event ", events[i].id," and this is the end-> ",eventEnd)
+      console.log(events[i])
+      let eventTimeMilliseconds = events[i].start_time
+      let eventDate = new Date(eventTimeMilliseconds*1000) // Date is expecting seconds
+      let eventEnd = addSeconds(eventDate,(events[i].duration*60))
 
       eventList.push( {name: events[i].name,
            start: eventDate,
@@ -68,20 +71,17 @@ export function ConvertServerEvents(events:any, dateRange:Date[]): Event[]{
       for (let d = 0; d<dateRange.length; d++){
 
         if (isRepeating(events[i], dateRange[d])){
-         
           let newTimeOffset = intervalToDuration({start:startOfDay(eventDate), end: eventDate})
-
           let newEventDate = add(dateRange[d],newTimeOffset)
 
           if (newEventDate>eventDate){
-            eventList.push( {name: events[i].name,
+            eventList.push({name: events[i].name,
               start: newEventDate,
-              end: addMilliseconds(newEventDate,events[i].duration*1000*60)           
+              end: addSeconds(newEventDate,events[i].duration*60)           
           })
         }
           else{
             console.log("didn't add event, repeats before start time")
-
           }
 
         }

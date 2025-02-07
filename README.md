@@ -16,11 +16,16 @@ react JS via [VITE](https://vite.dev/), using the following packages:
 Python server using [FAST API](https://fastapi.tiangolo.com/),connected to a [SQLite](https://www.sqlite.org/index.html) database
 
 
-## Assumptions:
-
+## Assumptions / Notes:
 * Users are trusted and auth isn't necessary
 * Only 1 user may be using the service at once (I did not include a semaphore locking gate around the database read/writes)
 * Users do not need a UI to modify, delete, or view details of the event. (But I included fields to make this possible in the future - all events have an ID and name such that they can be viewed + retrieved in a human friendly way!)
 * Users will stay on the 'week' view of the UI. (If this were to go live in production, I would remove the other views)
 * Users will not fill in data fields with garbage like negative times (this too should be cleaned up before going live - but there is some data validation in place already automatically)
-* 
+* Users must refresh page to get newest data, auto-refresh should be implemented before rolling to production.
+
+## Installation and Running:
+* From one terminal - launch the front end located in /src/server/Event-Calendar-Frontend:
+`` npm run dev``
+* From another terminal - launch the back end via fastapi:
+``fastapi dev main.py``
