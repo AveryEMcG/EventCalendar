@@ -1,30 +1,26 @@
 # EventCalendar
  A calendar to view Scheduled Events
 
+## Overview: 
+
+In this service, there exists a series of events which have a start time and duration, may repeat, but never conflict in time.
+
+Users can add events to the calendar using the date input fields on the page.
+
+### Front end: 
+react JS via [VITE](https://vite.dev/), using the following packages:
+* [react-big-calendar](https://www.npmjs.com/package/react-big-calendar) - a nice big friendly calendar to display the events on 
+* [react-hot-toast](https://react-hot-toast.com/) - simple toasting feature
+
+### Back end: 
+Python server using [FAST API](https://fastapi.tiangolo.com/),connected to a [SQLite](https://www.sqlite.org/index.html) database
 
 
-Plan:
-Front end: react JS
-Back end: FAST API
-Data: Sqlite
+## Assumptions:
 
-
-
-
-Implement a server-side application and simple userinterface for creating and viewing scheduled
-events, using Python as the server-side technology. You may use the technology of your choice forthe
-UI.
-
-* Scheduled events must have a name and a specific start time and duration
-* Scheduled events may occur once, or may repeat weekly at the same time on one or more specific
-days of the week as specified by the user. For example, a user may choose to schedule an event
-occur at the same time every Monday and Wednesday.
-
-* No more than one event may be scheduled to occur at a given day and time.
-* The UI must be compatible with current browser versions of at least Chrome and Firefox.
-* The UI must allow the userto view the set of previously scheduled events and to add a new event.
-* The application must include a README with instructions for building and running the application
-* There is no requirement for you to containerize your submission. However, you may optionally
-Dockerize your submission; please do not use any other containerization technology.
-* Clearly state all of the assumptions you made in completing the application
-* Submit your exercise response by providing the URL to a public Github repositorycd
+* Users are trusted and auth isn't necessary
+* Only 1 user may be using the service at once (I did not include a semaphore locking gate around the database read/writes)
+* Users do not need a UI to modify, delete, or view details of the event. (But I included fields to make this possible in the future - all events have an ID and name such that they can be viewed + retrieved in a human friendly way!)
+* Users will stay on the 'week' view of the UI. (If this were to go live in production, I would remove the other views)
+* Users will not fill in data fields with garbage like negative times (this too should be cleaned up before going live - but there is some data validation in place already automatically)
+* 
