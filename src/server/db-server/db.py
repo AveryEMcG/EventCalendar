@@ -31,6 +31,7 @@ class Event:
         self.repeats_s = repeats_s
 
 
+# TODO: the connection is opened and then closed after each transaction, For now it's fine but maybe won't scale well.
 def query(queryString):
     con = sqlite3.connect(DATABASE_NAME)
     cursor = con.cursor()
