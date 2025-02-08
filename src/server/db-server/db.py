@@ -34,7 +34,7 @@ class Event:
 def query(queryString):
     con = sqlite3.connect(DATABASE_NAME)
     cursor = con.cursor()
-    response = cursor.execute("SELECT * FROM ScheduledEvents")
+    response = cursor.execute(queryString)
     result = response.fetchall()
     out = []
     print(result)
