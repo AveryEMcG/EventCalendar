@@ -43,7 +43,7 @@ fastapi dev main.py
 ```
 
 ## Troubleshooting + Testing
-* The URL for the backend server is stored in src/server/Event-Calendar-Frontend/App.tsx, if for some reason FastAPI doesn't launch on the default IP/port, you can copy and paste the address to the ``BACKEND_URL`` variable.
+* The URL for the backend server is stored in src/server/Event-Calendar-Frontend/App.tsx, if for some reason FastAPI doesn't launch on the default IP/port, you can copy and paste the address to the ``BACKEND_URL`` variable. This ultimately should be moved to a configuration file.
 * Currently the only tests written are for some of the event collision checks. You can run them by navigating to /src/server/db-server and running:
 ``` python test.py```
 
