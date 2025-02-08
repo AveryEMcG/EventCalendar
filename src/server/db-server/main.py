@@ -16,6 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # These are the data types we'll be getting over the wire
 class Event_Struct(BaseModel):
     name: str
@@ -33,7 +34,9 @@ class Event_Struct(BaseModel):
 class Body(BaseModel):
     body: Event_Struct
 
+
 # -- Helper Functions -- #
+
 
 # This converts from JSON to our internal data formatting
 def eventStructToDBEvent(newEvent):
@@ -54,30 +57,31 @@ def eventStructToDBEvent(newEvent):
 
 
 def insertDBDataFromDict(event_dict):
-        #TODO: This is messy, clean it up
-        db.insert(
-            'INSERT INTO ScheduledEvents VALUES (NULL,"'
-            + str(event_dict["name"])
-            + '",'
-            + str(event_dict["start_time"])
-            + ","
-            + str(event_dict["duration"])
-            + ","
-            + str(event_dict["repeats_su"])
-            + ","
-            + str(event_dict["repeats_m"])
-            + ","
-            + str(event_dict["repeats_t"])
-            + ","
-            + str(event_dict["repeats_w"])
-            + ","
-            + str(event_dict["repeats_th"])
-            + ","
-            + str(event_dict["repeats_f"])
-            + ","
-            + str(event_dict["repeats_s"])
-            + ")"
-        )
+    # TODO: This is messy, clean it up
+    db.insert(
+        'INSERT INTO ScheduledEvents VALUES (NULL,"'
+        + str(event_dict["name"])
+        + '",'
+        + str(event_dict["start_time"])
+        + ","
+        + str(event_dict["duration"])
+        + ","
+        + str(event_dict["repeats_su"])
+        + ","
+        + str(event_dict["repeats_m"])
+        + ","
+        + str(event_dict["repeats_t"])
+        + ","
+        + str(event_dict["repeats_w"])
+        + ","
+        + str(event_dict["repeats_th"])
+        + ","
+        + str(event_dict["repeats_f"])
+        + ","
+        + str(event_dict["repeats_s"])
+        + ")"
+    )
+
 
 # -- API -- #
 @app.get("/events")
@@ -97,7 +101,6 @@ async def create_event(event: Body):
 
     # make sure we aren't going to have an overlapping event
     if helpers.timeIsUnique(newDbEvent, eventList):
-
         # this is messy, it should be moved into a new function
         result = insertDBDataFromDict(event_dict)
 

@@ -33,7 +33,7 @@ def getEndTimeForEvent(event):
     return (event.start_time) + (event.duration * SECONDS_IN_MINUTE)
 
 
-#Check if an event is repeating
+# Check if an event is repeating
 def isRepeating(event):
     if event.repeats_su:
         return True
@@ -51,17 +51,20 @@ def isRepeating(event):
         return True
     return False
 
+
 # Find out how many seconds from a date until a day of the week. This is NOT a good way to solve this.
-#TODO: find a better way to do this
+# TODO: find a better way to do this
 def addUntilDay(date, day):
     days = 0
-    while( date.weekday()+days*SECONDS_IN_DAY < day):
-        days+1
-    return days*SECONDS_IN_DAY
-    
+    while date.weekday() + days * SECONDS_IN_DAY < day:
+        days + 1
+    return days * SECONDS_IN_DAY
+
+
 # get how many MS a date is into that day
 def getDayAgnosticMS(date):
     return date.hour * 60 * 60 + (date.minute * 60) + (date.second)
+
 
 # Check if two windows of time are intersecting
 def collides(start1, end1, start2, end2):
@@ -92,44 +95,30 @@ def generateFirstWeekProjection(event, start, end):
     startDate = datetime.datetime.fromtimestamp(start)
     projections = []
     if event.repeats_su == 1:
-        offset = addUntilDay(startDate,6)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 6)
+        projections.append((start + offset, end + offset))
     if event.repeats_m == 1:
-        offset = addUntilDay(startDate,0)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 0)
+        projections.append((start + offset, end + offset))
     if event.repeats_t == 1:
-        offset = addUntilDay(startDate,1)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 1)
+        projections.append((start + offset, end + offset))
     if event.repeats_w == 1:
-        offset = addUntilDay(startDate,2)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 2)
+        projections.append((start + offset, end + offset))
     if event.repeats_th == 1:
-        offset = addUntilDay(startDate,3)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 3)
+        projections.append((start + offset, end + offset))
     if event.repeats_f == 1:
-        offset = addUntilDay(startDate,4)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 4)
+        projections.append((start + offset, end + offset))
     if event.repeats_s == 1:
-        offset = addUntilDay(startDate,5)
-        projections.append(
-            (start + offset, end + offset)
-        )
+        offset = addUntilDay(startDate, 5)
+        projections.append((start + offset, end + offset))
     return projections
 
 
-# Takes a event, and returns a list of start/stop times for 1 week 
+# Takes a event, and returns a list of start/stop times for 1 week
 def generateWeekProjection(event, absoluteStart, absoluteEnd):
     projections = []
     if event.repeats_su == 1:
@@ -163,74 +152,72 @@ def generateWeekProjection(event, absoluteStart, absoluteEnd):
     return projections
 
 
-
 #  --- Detailed Collision Detection Logic --- #
 
-# Check if two events in isolation (no repeats) collide with one another
-def eventsCollide(existingEvent,newEvent):
 
-        if collides(
-            newEvent.start_time,
-            getEndTimeForEvent(newEvent),
-            existingEvent.start_time,
-            getEndTimeForEvent(existingEvent),
-        ):
-            return True
+# Check if two events in isolation (no repeats) collide with one another
+def eventsCollide(existingEvent, newEvent):
+    if collides(
+        newEvent.start_time,
+        getEndTimeForEvent(newEvent),
+        existingEvent.start_time,
+        getEndTimeForEvent(existingEvent),
+    ):
+        return True
+
 
 # Check if there's collisions for the first event (sans its repeats)
-def firstWeekCollides(event,newEvent):
-    #project out a week from the exisiting event
-    week = generateFirstWeekProjection(event, event.start_time, getEndTimeForEvent(event))
+def firstWeekCollides(event, newEvent):
+    # project out a week from the exisiting event
+    week = generateFirstWeekProjection(
+        event, event.start_time, getEndTimeForEvent(event)
+    )
     for w in week:
         # if that repeating event is AFTER or INTERSECTS that event, double check whether it collides
-        if (newEvent.start_time >= w[1]):
+        if newEvent.start_time >= w[1]:
             if collides(w[0], w[1], newEvent.start_time, getEndTimeForEvent(newEvent)):
                 return True
     return False
 
 
 # Checks if repeats of either a new or existing event can conflict
-def repeatsCollide(newEvent,existingEvent):
-        existingEventStartTime = datetime.datetime.fromtimestamp(
-            existingEvent.start_time
-        )
-        newEventStartTime = datetime.datetime.fromtimestamp(newEvent.start_time)
+def repeatsCollide(newEvent, existingEvent):
+    existingEventStartTime = datetime.datetime.fromtimestamp(existingEvent.start_time)
+    newEventStartTime = datetime.datetime.fromtimestamp(newEvent.start_time)
 
-        # Get 'absolute' times - these are offsets from midnight in second
-        newEventAbsoluteStart = getDayAgnosticMS(newEventStartTime)
-        newEventAbsoluteEnd = newEventAbsoluteStart + (
-            newEvent.duration * SECONDS_IN_MINUTE
-        )
-        existingEventAbsoluteStart = getDayAgnosticMS(existingEventStartTime)
-        existingEventAbsoluteEnd = existingEventAbsoluteStart + (
-            existingEvent.duration * SECONDS_IN_MINUTE
-        )
+    # Get 'absolute' times - these are offsets from midnight in second
+    newEventAbsoluteStart = getDayAgnosticMS(newEventStartTime)
+    newEventAbsoluteEnd = newEventAbsoluteStart + (
+        newEvent.duration * SECONDS_IN_MINUTE
+    )
+    existingEventAbsoluteStart = getDayAgnosticMS(existingEventStartTime)
+    existingEventAbsoluteEnd = existingEventAbsoluteStart + (
+        existingEvent.duration * SECONDS_IN_MINUTE
+    )
 
-        # Project out those absolute times for all days to be repeated
-        newEventProjections = generateWeekProjection(
-            newEvent, newEventAbsoluteStart, newEventAbsoluteEnd
-        )
-        existingEventsProjections = generateWeekProjection(
-            existingEvent, existingEventAbsoluteStart, existingEventAbsoluteEnd
-        )
+    # Project out those absolute times for all days to be repeated
+    newEventProjections = generateWeekProjection(
+        newEvent, newEventAbsoluteStart, newEventAbsoluteEnd
+    )
+    existingEventsProjections = generateWeekProjection(
+        existingEvent, existingEventAbsoluteStart, existingEventAbsoluteEnd
+    )
 
-        # Compare these projections and see if there are any conflicts
-        for projection1 in newEventProjections:
-            for projection2 in existingEventsProjections:
-                if collides(
-                    projection1[0], projection1[1], projection2[0], projection2[1]
-                ):
-                    return True
-        return False
+    # Compare these projections and see if there are any conflicts
+    for projection1 in newEventProjections:
+        for projection2 in existingEventsProjections:
+            if collides(projection1[0], projection1[1], projection2[0], projection2[1]):
+                return True
+    return False
 
 
-#Checks if time is unique. Relies on the functions above!
+# Checks if time is unique. Relies on the functions above!
 def timeIsUnique(newEvent, eventList):
     for existingEvent in eventList:
-        if eventsCollide(newEvent=newEvent,existingEvent=existingEvent):
+        if eventsCollide(newEvent=newEvent, existingEvent=existingEvent):
             return False
-        if firstWeekCollides(newEvent,existingEvent):
+        if firstWeekCollides(newEvent, existingEvent):
             return False
-        if repeatsCollide(newEvent=newEvent,existingEvent=existingEvent):
+        if repeatsCollide(newEvent=newEvent, existingEvent=existingEvent):
             return False
     return True
