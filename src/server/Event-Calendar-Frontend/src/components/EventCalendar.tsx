@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react'
-import { Calendar, dateFnsLocalizer} from 'react-big-calendar'
-import format from 'date-fns/format'
-import parse from 'date-fns/parse'
-import startOfWeek from 'date-fns/startOfWeek'
-import getDay from 'date-fns/getDay'
-import enUS from 'date-fns/locale/en-US'
-import addHours from 'date-fns/addHours'
+import {useState, useEffect} from 'react'
+import {Calendar, dateFnsLocalizer} from 'react-big-calendar'
+import {format } from 'date-fns/format'
+import {parse } from 'date-fns/parse'
+import {startOfWeek} from 'date-fns/startOfWeek'
+import {getDay} from 'date-fns/getDay'
+import {enUS} from 'date-fns/locale/en-US'
+import {addHours} from 'date-fns/addHours'
+import { ScheduledEvent,ConvertServerEvents } from './Events'
+
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { ScheduledEvent,ConvertServerEvents } from './Events'
-const BACKEND_URL = "http://127.0.0.1:8000"
+
+
 //grabs a series of the 0th hour from the past week. Necessary to pre-populate date range
 function initalizeDateRange(){
   let curr = new Date 
@@ -25,6 +27,7 @@ function initalizeDateRange(){
 }
 
 export function EventCalendar(props: any) {
+
 const [events, setEvents] = useState<ScheduledEvent[]>([])
 const [dateRange, setDateRange]= useState<Date[]>(initalizeDateRange())
 
@@ -49,14 +52,10 @@ const locales = {
      });
    }, [])
 
-   console.log(events)
-  
-
-
   // when we click through the weeks in the calendar, update our internal state
-  const onRangeChange = data => {setDateRange(data)}
+  const onRangeChange = (data:any) => {setDateRange(data)}
   const calenderEvents = ConvertServerEvents(events, dateRange)
-   console.log(events)
+
   return (
     <Calendar
       defaultView='week'
