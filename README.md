@@ -27,17 +27,20 @@ source .venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
-To get the front-end dependencies installed properly:
-* navigate to Event-Calendar-Frontend and run:
+* Then navigate to Event-Calendar-Frontend and run:
 ```
 npm install
 ```
 
 ### Running
-* From one terminal - launch the front end located in /src/server/Event-Calendar-Frontend:
-`` npm run dev``
-* From another terminal - launch the back end via fastapi:
-``fastapi dev main.py``
+* From one terminal - navigate to /src/server/Event-Calendar-Frontend and run :
+```
+npm run dev
+```
+* From another terminal - navigate to /src/server/db-server and run:
+```
+fastapi dev main.py
+```
 
 ## Assumptions / Notes:
 * Users are trusted and auth isn't necessary
@@ -48,4 +51,3 @@ npm install
 * Users must refresh page to get newest data, auto-refresh should be implemented before rolling to production.
 * The database comes pre-populated with some events
 * Overnight events are displayed by the calendar module as lines at the top of the screen - this can be confusing
-
