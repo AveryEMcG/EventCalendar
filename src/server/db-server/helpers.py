@@ -1,7 +1,7 @@
 import db
 import datetime
 
-
+# ---- Globals ----
 # Defining some times here, we'll use them in our calculations below:
 SECONDS_IN_MINUTE = 60
 SECONDS_IN_DAY = 86400
@@ -26,6 +26,13 @@ WEEK_SECONDS = [
     SUNDAY_SECONDS,
 ]
 
+
+# ---- Small Helper functions  ----
+# events have duration and start time, this makes getting the end time easier in-line
+def getEndTimeForEvent(event):
+    return (event.start_time) + (event.duration * SECONDS_IN_MINUTE)
+
+
 #Check if an event is repeating
 def isRepeating(event):
     if event.repeats_su:
@@ -44,8 +51,19 @@ def isRepeating(event):
         return True
     return False
 
+# Find out how many seconds from a date until a day of the week. This is NOT a good way to solve this.
+#TODO: find a better way to do this
+def addUntilDay(date, day):
+    days = 0
+    while( date.weekday()+days*SECONDS_IN_DAY < day):
+        days+1
+    return days*SECONDS_IN_DAY
+    
+# get how many MS a date is into that day
+def getDayAgnosticMS(date):
+    return date.hour * 60 * 60 + (date.minute * 60) + (date.second)
 
-# Check if two events are intersecting
+# Check if two windows of time are intersecting
 def collides(start1, end1, start2, end2):
     first = None
     second = None
@@ -68,29 +86,7 @@ def collides(start1, end1, start2, end2):
     return False
 
 
-# events have duration and start time, this makes getting the end time easier in-line
-def getEndTimeForEvent(event):
-    return (event.start_time) + (event.duration * SECONDS_IN_MINUTE)
-
-# Check if there's collisions for the first event (sans its repeats)
-def firstWeekCollides(event,newEvent):
-    #project out a week from the exisiting event
-    week = generateFirstWeekProjection(event, event.start_time, getEndTimeForEvent(event))
-    for w in week:
-        # if that repeating event is AFTER or INTERSECTS that event, double check whether it collides
-        if (newEvent.start_time >= w[1]):
-            if collides(w[0], w[1], newEvent.start_time, getEndTimeForEvent(newEvent)):
-                return True
-    return False
-
-# Find out how many seconds from a date until a day of the week. This is NOT a good way to solve this.
-def addUntilDay(date, day):
-    days = 0
-    while( date.weekday()+days*SECONDS_IN_DAY < day):
-        days+1
-    return days*SECONDS_IN_DAY
-    
-
+#  --- Projections ---
 # Takes a event, and returns a list of subsequent start/stop times for 1 week AFTER the initial event
 def generateFirstWeekProjection(event, start, end):
     startDate = datetime.datetime.fromtimestamp(start)
@@ -164,53 +160,53 @@ def generateWeekProjection(event, absoluteStart, absoluteEnd):
         projections.append(
             (absoluteStart + SATURDAY_SECONDS, absoluteEnd + SATURDAY_SECONDS)
         )
-
     return projections
 
 
 
-#Checks if time is unique. Relies on the functions above!
-def timeIsUnique(newEvent, eventList):
+#  --- Detailed Collision Detection Logic --- #
 
-    #prepare our new event
-    newEventStartTime = datetime.datetime.fromtimestamp(newEvent.start_time)
-    newEventEndTime = datetime.datetime.fromtimestamp(
-        getEndTimeForEvent(newEvent)
-    )
+# Check if two events in isolation (no repeats) collide with one another
+def eventsCollide(existingEvent,newEvent):
 
-    # look at prior existing events
-    for existingEvent in eventList:
+        if collides(
+            newEvent.start_time,
+            getEndTimeForEvent(newEvent),
+            existingEvent.start_time,
+            getEndTimeForEvent(existingEvent),
+        ):
+            return True
+
+# Check if there's collisions for the first event (sans its repeats)
+def firstWeekCollides(event,newEvent):
+    #project out a week from the exisiting event
+    week = generateFirstWeekProjection(event, event.start_time, getEndTimeForEvent(event))
+    for w in week:
+        # if that repeating event is AFTER or INTERSECTS that event, double check whether it collides
+        if (newEvent.start_time >= w[1]):
+            if collides(w[0], w[1], newEvent.start_time, getEndTimeForEvent(newEvent)):
+                return True
+    return False
+
+
+# Checks if repeats of either a new or existing event can conflict
+def repeatsCollide(newEvent,existingEvent):
         existingEventStartTime = datetime.datetime.fromtimestamp(
             existingEvent.start_time
         )
-        existingEventEndTime = datetime.datetime.fromtimestamp(
-                  getEndTimeForEvent(existingEvent)
-        )
+        newEventStartTime = datetime.datetime.fromtimestamp(newEvent.start_time)
 
-        # See if the event conflicts with the other event (sans repeats)
-        if collides(
-            newEventStartTime,
-            newEventEndTime,
-            existingEventStartTime,
-            existingEventEndTime,
-        ):
-            return False
-
-        # Check if there is a collision for the initial week
-        if firstWeekCollides(newEvent,existingEvent):
-            return False
-       
+        # Get 'absolute' times - these are offsets from midnight in second
         newEventAbsoluteStart = getDayAgnosticMS(newEventStartTime)
         newEventAbsoluteEnd = newEventAbsoluteStart + (
             newEvent.duration * SECONDS_IN_MINUTE
         )
-
         existingEventAbsoluteStart = getDayAgnosticMS(existingEventStartTime)
         existingEventAbsoluteEnd = existingEventAbsoluteStart + (
             existingEvent.duration * SECONDS_IN_MINUTE
         )
 
-        # 2-4 - make our projections
+        # Project out those absolute times for all days to be repeated
         newEventProjections = generateWeekProjection(
             newEvent, newEventAbsoluteStart, newEventAbsoluteEnd
         )
@@ -218,14 +214,23 @@ def timeIsUnique(newEvent, eventList):
             existingEvent, existingEventAbsoluteStart, existingEventAbsoluteEnd
         )
 
+        # Compare these projections and see if there are any conflicts
         for projection1 in newEventProjections:
             for projection2 in existingEventsProjections:
                 if collides(
                     projection1[0], projection1[1], projection2[0], projection2[1]
                 ):
-                    return False
+                    return True
+        return False
+
+
+#Checks if time is unique. Relies on the functions above!
+def timeIsUnique(newEvent, eventList):
+    for existingEvent in eventList:
+        if eventsCollide(newEvent=newEvent,existingEvent=existingEvent):
+            return False
+        if firstWeekCollides(newEvent,existingEvent):
+            return False
+        if repeatsCollide(newEvent=newEvent,existingEvent=existingEvent):
+            return False
     return True
-
-
-def getDayAgnosticMS(date):
-    return date.hour * 60 * 60 + (date.minute * 60) + (date.second)

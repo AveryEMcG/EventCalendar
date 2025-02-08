@@ -5,6 +5,7 @@ import db
 import helpers
 from pydantic import BaseModel
 
+# -- Defines + Headers -- #
 app = FastAPI()
 origins = ["*"]
 app.add_middleware(
@@ -14,7 +15,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # These are the data types we'll be getting over the wire
 class Event_Struct(BaseModel):
@@ -33,6 +33,7 @@ class Event_Struct(BaseModel):
 class Body(BaseModel):
     body: Event_Struct
 
+# -- Helper Functions -- #
 
 # This converts from JSON to our internal data formatting
 def eventStructToDBEvent(newEvent):
@@ -52,24 +53,9 @@ def eventStructToDBEvent(newEvent):
     )
 
 
-@app.get("/events")
-def get_events():
-    response = db.query("SELECT * FROM ScheduledEvents")
-    return jsonable_encoder(response)
-
-
-@app.post("/events")
-async def create_event(event: Body):
-    # convert the data over
-    event_dict = event.body.model_dump()
-    newDbEvent = eventStructToDBEvent(event_dict)
-
-    # get our existing events
-    eventList = db.query("SELECT * FROM ScheduledEvents")
-
-    # make sure we aren't going to have an overlapping event
-    if helpers.timeIsUnique(newDbEvent, eventList):
-        result = db.insert(
+def insertDBDataFromDict(event_dict):
+        #TODO: This is messy, clean it up
+        db.insert(
             'INSERT INTO ScheduledEvents VALUES (NULL,"'
             + str(event_dict["name"])
             + '",'
@@ -92,6 +78,28 @@ async def create_event(event: Body):
             + str(event_dict["repeats_s"])
             + ")"
         )
+
+# -- API -- #
+@app.get("/events")
+def get_events():
+    response = db.query("SELECT * FROM ScheduledEvents")
+    return jsonable_encoder(response)
+
+
+@app.post("/events")
+async def create_event(event: Body):
+    # convert the data over
+    event_dict = event.body.model_dump()
+    newDbEvent = eventStructToDBEvent(event_dict)
+
+    # get our existing events
+    eventList = db.query("SELECT * FROM ScheduledEvents")
+
+    # make sure we aren't going to have an overlapping event
+    if helpers.timeIsUnique(newDbEvent, eventList):
+
+        # this is messy, it should be moved into a new function
+        result = insertDBDataFromDict(event_dict)
 
     # let the user know there is a conflict
     else:
