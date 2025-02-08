@@ -77,7 +77,7 @@ export function AddEventBox(props:any){
     <>
     <form onSubmit={handleSubmit}>
     <input aria-label="Date and time" type="datetime-local" onChange={(event)=>setStartDate(new Date(event.target.value))}/>   <br/>
-    Duration(Minutes):<input type="number"onChange={(event)=>setDuration(Number(event.target.value))}/><br/>
+    Duration(Minutes, 1 or more):<input type="number"onChange={(event)=>setDuration(Number(event.target.value))}/><br/>
     Repeats Sunday: <input type="Checkbox" onChange={(event)=>setRepeatsSunday(event.target.checked)}/><br/>
     Repeats Monday: <input type="Checkbox"onChange={(event)=>setRepeatsMonday(event.target.checked)}/><br/>
     Repeats Tuesday: <input type="Checkbox"onChange={(event)=>setRepeatsTuesday(event.target.checked)}/><br/>
