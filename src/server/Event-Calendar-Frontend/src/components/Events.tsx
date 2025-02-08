@@ -1,9 +1,9 @@
-import getDay from 'date-fns/getDay'
+import {getDay} from 'date-fns/getDay'
 import {addSeconds} from 'date-fns/addSeconds'
-import {  intervalToDuration } from 'date-fns'
-import startOfDay from 'date-fns/startOfDay'
+import {intervalToDuration} from 'date-fns'
+import {startOfDay} from 'date-fns/startOfDay'
 import {add} from 'date-fns/add'
-import addHours from 'date-fns/addHours'
+import {addHours} from 'date-fns/addHours'
 
 
 // This is our database representation of scheduled events, 
@@ -54,7 +54,7 @@ export function isRepeating(event: any, day:Date):boolean{
 
 // convert ScheduledEvent -> big calendar tolerant event
 export function ConvertServerEvents(events:any, dateRange:Date[]): Event[]{
- 
+
   var eventList = []
 
   for (let i = 0; i<events.length; i++){

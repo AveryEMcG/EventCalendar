@@ -3,6 +3,7 @@ import { EventCalendar } from "./components/EventCalendar"
 import { AddEventBox } from "./components/AddEventBox"
 import './App.css'
 
+// TODO: move this to a configuration file
 const BACKEND_URL = "http://127.0.0.1:8000"
 
 function App() {
