@@ -4,13 +4,13 @@ import toast, { Toaster } from 'react-hot-toast';
 import "react-datepicker/dist/react-datepicker.css";
 
 
+
 function isClientError(statusCode : number) {
     return statusCode >= 400 && statusCode < 500;
   }
 function isServerError(statusCode : number) {
     return statusCode >= 500 && statusCode < 600;
   }
- 
 
 export function AddEventBox(props:any){
     const [startDate, setStartDate] = useState(new Date());
@@ -22,19 +22,16 @@ export function AddEventBox(props:any){
     const [repeatsFriday, setRepeatsFriday] = useState(false);
     const [repeatsSaturday, setRepeatsSaturday] = useState(false);
     const [duration,setDuration]=useState(0)
-
-    console.log(props)
     
-    const handleSubmit = (event) => {
-        event.preventDefault(); // Prevent default form submission
-        console.log(startDate)
-
+    const handleSubmit = (event: any) => {
+        event.preventDefault(); 
 
         var body: ScheduledEvent= {
             name:"n/a",
             id:0,
             duration:duration,
-            start_time: startDate.valueOf()/1000,
+            //This is annoying, but the calendar needs seconds and valueof gives ms
+            start_time: startDate.valueOf()/1000, 
             repeats_su:repeatsSunday,
             repeats_m:repeatsMonday,
             repeats_t:repeatsTuesday,
@@ -43,7 +40,8 @@ export function AddEventBox(props:any){
             repeats_f:repeatsFriday,
             repeats_s:repeatsSaturday,
         }
-        console.log({body})
+
+        //Try to post the event
         fetch(props.backend_url+"/events", {
             method: 'POST',
             headers: {
@@ -52,8 +50,11 @@ export function AddEventBox(props:any){
             body: JSON.stringify({body
             })
           }).then((resp)=>{
+            //give toasts based on response
             if (isClientError(resp.status)){
-                toast.error("Error in adding event, please check event times")
+                resp.json().then((err)=> {
+                  toast.error("Error in adding event: "+err.detail)}
+                )
                 return
             }
             if (isServerError(resp.status)){
